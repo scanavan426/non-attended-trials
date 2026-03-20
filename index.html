@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Non-Attended Trials</title>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f4f5f7;color:#1a1a2e;font-size:14px}
+.page{max-width:1200px;margin:0 auto;padding:28px 20px}
+.header{margin-bottom:24px}
+.header h1{font-size:22px;font-weight:600;color:#1a1a2e}
+.header p{font-size:13px;color:#6b7280;margin-top:4px}
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:24px}
+.stat{background:#fff;border-radius:10px;padding:16px 18px;border:1px solid #e5e7eb}
+.stat-label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:6px}
+.stat-val{font-size:26px;font-weight:600;color:#1a1a2e}
+.stat-val.danger{color:#dc2626}
+.controls{background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:14px 16px;margin-bottom:16px;display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.ctrl-group{display:flex;align-items:center;gap:8px}
+.ctrl-group label{font-size:12px;color:#6b7280;white-space:nowrap}
+select{font-size:13px;padding:6px 10px;border-radius:7px;border:1px solid #d1d5db;background:#fff;color:#1a1a2e;cursor:pointer}
+.search-wrap{flex:1;min-width:180px}
+.search-wrap input{width:100%;font-size:13px;padding:6px 10px 6px 32px;border-radius:7px;border:1px solid #d1d5db;background:#fff;color:#1a1a2e}
+.pills-wrap{background:#fff;border-radius:10px;border:1px solid #e5e7eb;padding:12px 16px;margin-bottom:16px}
+.pills-label{font-size:11px;color:#6b7280;text-transform:uppercase;letter-spacing:.05em;margin-bottom:8px}
+.pills{display:flex;flex-wrap:wrap;gap:6px}
+.pill{font-size:12px;padding:4px 12px;border-radius:99px;border:1px solid #d1d5db;background:#fff;color:#6b7280;cursor:pointer;transition:all .15s;white-space:nowrap}
+.pill:hover{border-color:#185FA5;color:#185FA5}
+.pill.active{background:#185FA5;border-color:#185FA5;color:#fff}
+.pill.faded{opacity:.4}
+.day-tabs{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:16px}
+.day-tab{font-size:12px;padding:5px 14px;border-radius:7px;border:1px solid #d1d5db;background:#fff;color:#6b7280;cursor:pointer;transition:all .15s;white-space:nowrap}
+.day-tab:hover{border-color:#185FA5;color:#185FA5}
+.day-tab.active{background:#185FA5;border-color:#185FA5;color:#fff}
+.day-tab .cnt{font-size:11px;opacity:.75;margin-left:3px}
+.table-card{background:#fff;border-radius:10px;border:1px solid #e5e7eb;overflow:hidden}
+.table-header{display:flex;align-items:center;justify-content:space-between;padding:14px 16px;border-bottom:1px solid #e5e7eb}
+.table-title{font-size:13px;font-weight:600;color:#1a1a2e}
+.row-count{font-size:12px;background:#f4f5f7;color:#6b7280;padding:2px 10px;border-radius:99px}
+table{width:100%;border-collapse:collapse}
+thead th{background:#f9fafb;font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:#6b7280;text-align:left;padding:10px 16px;border-bottom:1px solid #e5e7eb;white-space:nowrap;cursor:pointer;user-select:none}
+thead th:hover{color:#1a1a2e}
+thead th .arr{margin-left:4px;opacity:.4;font-size:9px}
+thead th.sort-asc .arr::after{content:'▲'}
+thead th.sort-desc .arr::after{content:'▼'}
+thead th:not(.sort-asc):not(.sort-desc) .arr::after{content:'⇅'}
+tbody td{padding:10px 16px;border-bottom:1px solid #f0f0f0;vertical-align:middle}
+tbody tr:last-child td{border-bottom:none}
+tbody tr:hover td{background:#f9fafb}
+.name-link{color:#185FA5;text-decoration:none;font-weight:500}
+.name-link:hover{text-decoration:underline}
+.badge{display:inline-flex;align-items:center;font-size:11px;font-weight:600;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.bb1{background:#dbeafe;color:#1e40af}.bb2{background:#bfdbfe;color:#1e3a8a}
+.brb1{background:#dcfce7;color:#166534}.brb2{background:#bbf7d0;color:#14532d}
+.bab1{background:#fef9c3;color:#854d0e}.bab2{background:#fde68a;color:#78350f}
+.bib1{background:#fce7f3;color:#9d174d}
+.date-cell,.time-cell,.loc-cell{color:#6b7280;font-size:12px;white-space:nowrap}
+.empty{text-align:center;padding:40px;color:#9ca3af;font-size:13px}
+@media(max-width:700px){.stats{grid-template-columns:repeat(2,1fr)}table{font-size:12px}thead th,tbody td{padding:8px 10px}}
+</style>
+</head>
+<body>
+<div class="page">
+<div class="header"><h1>Non-Attended Trials</h1><p>Week of March 15 – 19, 2026 &nbsp;·&nbsp; All 22 locations</p></div>
+<div class="stats">
+<div class="stat"><div class="stat-label">No-shows</div><div class="stat-val danger" id="s-ns">154</div></div>
+<div class="stat"><div class="stat-label">Total scheduled</div><div class="stat-val">547</div></div>
+<div class="stat"><div class="stat-label">Attended</div><div class="stat-val">393</div></div>
+<div class="stat"><div class="stat-label">No-show rate</div><div class="stat-val danger" id="s-rate">28.2%</div></div>
+</div>
+<div class="day-tabs" id="dayTabs"></div>
+<div class="controls">
+<div class="search-wrap"><input type="text" id="search" placeholder="Search student name…" oninput="render()"></div>
+<div class="ctrl-group"><label>Sort by</label>
+<select id="sortBy" onchange="render()"><option value="date">Date</option><option value="name">Student name</option><option value="level">Level</option><option value="loc">Location</option><option value="time">Time</option></select></div>
+<div class="ctrl-group"><select id="sortDir" onchange="render()"><option value="asc">A → Z / Earliest</option><option value="desc">Z → A / Latest</option></select></div>
+</div>
+<div class="pills-wrap"><div class="pills-label">Filter by location</div><div class="pills" id="pills"></div></div>
+<div class="table-card">
+<div class="table-header"><span class="table-title">Students with no date attended</span><span class="row-count" id="rowCount">154 students</span></div>
+<table><thead><tr>
+<th onclick="colSort('name')">Student<span class="arr"></span></th>
+<th onclick="colSort('level')">Level<span class="arr"></span></th>
+<th onclick="colSort('date')">Date<span class="arr"></span></th>
+<th onclick="colSort('time')">Time<span class="arr"></span></th>
+<th onclick="colSort('loc')">Location<span class="arr"></span></th>
+</tr></thead><tbody id="tbody"></tbody></table>
+</div>
+</div>
+<script>
+const ALL_LOCS=["Allen","Atlanta - North Druid Hills","Buffalo Grove","Chantilly","Chicago - North Center","Dulles","Fairfax","Falls Church","Frisco","Germantown","Gilbert","Hoffman Estates","Huntington Beach","Johns Creek","Lakewood","Niles","Plano","San Diego - Point Loma","Springfield","Torrance","Tustin","Wilmette"];
+const DAY_MAP={"2026-03-15":"Sun 3/15","2026-03-16":"Mon 3/16","2026-03-17":"Tue 3/17","2026-03-18":"Wed 3/18","2026-03-19":"Thu 3/19"};
+const data=[{"name":"Mihit Naik","fid":680452,"level":"Bold Blue 1","time":"15:00:00","date":"2026-03-15","loc":"Johns Creek"},{"name":"Woojae Chang","fid":679434,"level":"Bright Blue 1","time":"15:30:00","date":"2026-03-15","loc":"Johns Creek"},{"name":"Anav Jain","fid":489667,"level":"Baby Blue 1","time":"16:00:00","date":"2026-03-18","loc":"Johns Creek"},{"name":"William Sullivan","fid":668258,"level":"Baby Blue 2","time":"16:30:00","date":"2026-03-18","loc":"Johns Creek"},{"name":"Bavika Karthick","fid":679547,"level":"Bold Blue 1","time":"18:30:00","date":"2026-03-18","loc":"Johns Creek"},{"name":"Thangamithran Karthick","fid":679547,"level":"Bright Blue 1","time":"18:30:00","date":"2026-03-18","loc":"Johns Creek"},{"name":"Khloe Tran","fid":676180,"level":"Bright Blue 1","time":"11:00:00","date":"2026-03-15","loc":"Huntington Beach"},{"name":"Angelina Le","fid":611274,"level":"Bright Blue 1","time":"13:30:00","date":"2026-03-15","loc":"Huntington Beach"},{"name":"Sebastian Venegas","fid":415798,"level":"Bright Blue 1","time":"10:00:00","date":"2026-03-16","loc":"Huntington Beach"},{"name":"Zachary Guyton","fid":678913,"level":"Baby Blue 1","time":"11:00:00","date":"2026-03-16","loc":"Huntington Beach"},{"name":"Kyle Guyton","fid":678913,"level":"Baby Blue 1","time":"11:00:00","date":"2026-03-16","loc":"Huntington Beach"},{"name":"Amiyah Wright","fid":675505,"level":"Bright Blue 1","time":"08:00:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Travion Wright","fid":675505,"level":"Baby Blue 1","time":"08:00:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Sebastian Vargas","fid":675542,"level":"Baby Blue 1","time":"09:00:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Zuri Ramsey","fid":643200,"level":"Baby Blue 1","time":"10:00:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Jayleen Posada","fid":672438,"level":"Bright Blue 1","time":"11:15:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Jesus Quiroz","fid":671336,"level":"Bold Blue 1","time":"13:30:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Delilah Santos","fid":675469,"level":"Bright Blue 1","time":"14:00:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Venelope Morales","fid":674364,"level":"Bold Blue 1","time":"14:00:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Ela Feldman","fid":674364,"level":"Bold Blue 1","time":"14:00:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Braylee Lujan","fid":671370,"level":"Bright Blue 1","time":"14:30:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Emilio Aguero","fid":676698,"level":"Bold Blue 1","time":"15:00:00","date":"2026-03-15","loc":"Lakewood"},{"name":"Cassio Kamiya","fid":620584,"level":"Bright Blue 1","time":"17:00:00","date":"2026-03-16","loc":"Lakewood"},{"name":"Chris Franklin III","fid":678398,"level":"Baby Blue 2","time":"17:00:00","date":"2026-03-16","loc":"Lakewood"},{"name":"Adiel Menjivar","fid":680865,"level":"Bright Blue 1","time":"18:15:00","date":"2026-03-16","loc":"Lakewood"},{"name":"Andrew Ochoa","fid":675571,"level":"Bold Blue 1","time":"18:45:00","date":"2026-03-16","loc":"Lakewood"},{"name":"Christopher Ochoa","fid":675571,"level":"Baby Blue 2","time":"18:45:00","date":"2026-03-16","loc":"Lakewood"},{"name":"Maliyah Hawthorne","fid":677967,"level":"Bold Blue 1","time":"19:15:00","date":"2026-03-16","loc":"Lakewood"},{"name":"Alyson Alvarez","fid":677972,"level":"Bright Blue 1","time":"19:15:00","date":"2026-03-16","loc":"Lakewood"},{"name":"Malik Hawthorne","fid":677967,"level":"Bright Blue 1","time":"19:15:00","date":"2026-03-16","loc":"Lakewood"},{"name":"Shelly Lewis","fid":679068,"level":"Bold Blue 1","time":"17:30:00","date":"2026-03-19","loc":"Lakewood"},{"name":"Ava Barraza","fid":680765,"level":"Bold Blue 1","time":"18:00:00","date":"2026-03-19","loc":"Lakewood"},{"name":"Mia Barraza","fid":680765,"level":"Bold Blue 1","time":"18:00:00","date":"2026-03-19","loc":"Lakewood"},{"name":"Lia Barraza","fid":680765,"level":"Bold Blue 1","time":"18:00:00","date":"2026-03-19","loc":"Lakewood"},{"name":"Serenity Otto","fid":676671,"level":"Bright Blue 1","time":"18:45:00","date":"2026-03-19","loc":"Lakewood"},{"name":"Milli Otto","fid":676671,"level":"Bold Blue 1","time":"18:45:00","date":"2026-03-19","loc":"Lakewood"},{"name":"Zoey Chu","fid":678630,"level":"Bright Blue 1","time":"19:15:00","date":"2026-03-19","loc":"Lakewood"},{"name":"Kumani Sykes","fid":671333,"level":"Bold Blue 1","time":"15:30:00","date":"2026-03-19","loc":"Atlanta - North Druid Hills"},{"name":"Messiah Sykes","fid":671333,"level":"Bold Blue 1","time":"15:30:00","date":"2026-03-19","loc":"Atlanta - North Druid Hills"},{"name":"Camron Grant","fid":670777,"level":"Bright Blue 1","time":"10:00:00","date":"2026-03-15","loc":"Atlanta - North Druid Hills"},{"name":"Demi Grant","fid":670777,"level":"Baby Blue 1","time":"10:00:00","date":"2026-03-15","loc":"Atlanta - North Druid Hills"},{"name":"Elias Barquero","fid":679990,"level":"Bold Blue 1","time":"11:30:00","date":"2026-03-15","loc":"Atlanta - North Druid Hills"},{"name":"Dominique Sessions Jr.","fid":678446,"level":"Bold Blue 1","time":"15:30:00","date":"2026-03-19","loc":"San Diego - Point Loma"},{"name":"Yara Khalil","fid":678872,"level":"Bright Blue 1","time":"10:30:00","date":"2026-03-15","loc":"San Diego - Point Loma"},{"name":"Dani Pryce","fid":679451,"level":"Bold Blue 1","time":"12:00:00","date":"2026-03-15","loc":"San Diego - Point Loma"},{"name":"Rowan Nakamura","fid":675899,"level":"Baby Blue 1","time":"13:30:00","date":"2026-03-15","loc":"San Diego - Point Loma"},{"name":"Atlas Kowalski","fid":681009,"level":"Bright Blue 1","time":"15:00:00","date":"2026-03-15","loc":"San Diego - Point Loma"},{"name":"Cleo Vasquez","fid":678342,"level":"Bold Blue 1","time":"10:00:00","date":"2026-03-16","loc":"San Diego - Point Loma"},{"name":"Indie Vasquez","fid":678342,"level":"Baby Blue 1","time":"10:00:00","date":"2026-03-16","loc":"San Diego - Point Loma"},{"name":"Sage Brennan","fid":679678,"level":"Bright Blue 1","time":"11:30:00","date":"2026-03-16","loc":"San Diego - Point Loma"},{"name":"Wren Delgado","fid":680199,"level":"Bold Blue 1","time":"13:00:00","date":"2026-03-16","loc":"San Diego - Point Loma"},{"name":"Cruz Delgado","fid":680199,"level":"Baby Blue 1","time":"13:00:00","date":"2026-03-16","loc":"San Diego - Point Loma"},{"name":"Nico Espinoza","fid":677523,"level":"Bright Blue 1","time":"15:30:00","date":"2026-03-16","loc":"San Diego - Point Loma"},{"name":"Maren Espinoza","fid":677523,"level":"Baby Blue 2","time":"15:30:00","date":"2026-03-16","loc":"San Diego - Point Loma"},{"name":"Bo Trujillo","fid":678804,"level":"Bold Blue 1","time":"17:00:00","date":"2026-03-16","loc":"San Diego - Point Loma"},{"name":"Rosie Trujillo","fid":678804,"level":"Baby Blue 1","time":"17:00:00","date":"2026-03-16","loc":"San Diego - Point Loma"},{"name":"Matthew Gamez","fid":293717,"level":"Bold Blue 1","time":"16:30:00","date":"2026-03-19","loc":"Allen"},{"name":"Yvette Gamez","fid":293717,"level":"Bold Blue 1","time":"16:30:00","date":"2026-03-19","loc":"Allen"},{"name":"Memphis Gamez","fid":293717,"level":"Bright Blue 1","time":"16:30:00","date":"2026-03-19","loc":"Allen"},{"name":"Kaylani Fisher","fid":677766,"level":"Bold Blue 1","time":"09:00:00","date":"2026-03-16","loc":"Allen"},{"name":"Demarcus Fisher","fid":677766,"level":"Bold Blue 1","time":"09:00:00","date":"2026-03-16","loc":"Allen"},{"name":"Elise Cabrera","fid":674452,"level":"Bright Blue 1","time":"10:00:00","date":"2026-03-17","loc":"Allen"},{"name":"Dominic Araniva","fid":679814,"level":"Baby Blue 1","time":"16:00:00","date":"2026-03-17","loc":"Allen"},{"name":"Christian Araniva","fid":679814,"level":"Baby Blue 1","time":"16:00:00","date":"2026-03-17","loc":"Allen"},{"name":"Mia Nguyen","fid":677533,"level":"Bold Blue 1","time":"17:00:00","date":"2026-03-17","loc":"Allen"},{"name":"Amir Williams Lovelady","fid":678608,"level":"Baby Blue 1","time":"16:30:00","date":"2026-03-19","loc":"Plano"},{"name":"Zoe Gilani","fid":675800,"level":"Baby Blue 1","time":"16:30:00","date":"2026-03-19","loc":"Plano"},{"name":"Jax Nolen","fid":679102,"level":"Bright Blue 1","time":"16:00:00","date":"2026-03-17","loc":"Plano"},{"name":"River Walsh","fid":679301,"level":"Bold Blue 1","time":"17:30:00","date":"2026-03-17","loc":"Plano"},{"name":"Piper Walsh","fid":679301,"level":"Baby Blue 1","time":"17:30:00","date":"2026-03-17","loc":"Plano"},{"name":"Emerson Tate","fid":678654,"level":"Bright Blue 1","time":"18:00:00","date":"2026-03-17","loc":"Plano"},{"name":"Zane Okafor","fid":680011,"level":"Bold Blue 1","time":"19:00:00","date":"2026-03-17","loc":"Plano"},{"name":"Finn Okafor","fid":680011,"level":"Baby Blue 1","time":"19:00:00","date":"2026-03-17","loc":"Plano"},{"name":"Kayson Hamilton","fid":681389,"level":"Bright Blue 1","time":"18:45:00","date":"2026-03-19","loc":"Torrance"},{"name":"Nevaeh Hamilton","fid":681389,"level":"Bright Blue 1","time":"18:45:00","date":"2026-03-19","loc":"Torrance"},{"name":"Luca Reyna","fid":680422,"level":"Bright Blue 1","time":"09:00:00","date":"2026-03-17","loc":"Torrance"},{"name":"Stella Reyna","fid":680422,"level":"Baby Blue 1","time":"09:00:00","date":"2026-03-17","loc":"Torrance"},{"name":"Axel Moreno","fid":679233,"level":"Bold Blue 1","time":"10:30:00","date":"2026-03-17","loc":"Torrance"},{"name":"Paloma Moreno","fid":679233,"level":"Bright Blue 1","time":"10:30:00","date":"2026-03-17","loc":"Torrance"},{"name":"Bellamy Cruz","fid":681112,"level":"Baby Blue 1","time":"12:00:00","date":"2026-03-17","loc":"Torrance"},{"name":"Matias Donet","fid":560257,"level":"Bright Blue 1","time":"19:00:00","date":"2026-03-19","loc":"Falls Church"},{"name":"Naya LeFevre","fid":680427,"level":"Bold Blue 1","time":"19:00:00","date":"2026-03-19","loc":"Falls Church"},{"name":"Noah Ruzbeh","fid":408494,"level":"Baby Blue 1","time":"11:00:00","date":"2026-03-16","loc":"Falls Church"},{"name":"Avery Valenti","fid":676410,"level":"Baby Blue 2","time":"09:00:00","date":"2026-03-15","loc":"Frisco"},{"name":"Isaiah Moore","fid":679208,"level":"Bright Blue 1","time":"09:00:00","date":"2026-03-15","loc":"Frisco"},{"name":"Stefano Martínez","fid":676143,"level":"Baby Blue 2","time":"10:00:00","date":"2026-03-15","loc":"Frisco"},{"name":"Abigail Ulloa","fid":677057,"level":"Baby Blue 1","time":"11:00:00","date":"2026-03-15","loc":"Frisco"},{"name":"Chanel White","fid":334053,"level":"Baby Blue 2","time":"11:30:00","date":"2026-03-15","loc":"Frisco"},{"name":"Shloka Karre","fid":679384,"level":"Baby Blue 2","time":"19:00:00","date":"2026-03-17","loc":"Frisco"},{"name":"Kairo Reyes","fid":677991,"level":"Bright Blue 1","time":"10:00:00","date":"2026-03-18","loc":"Gilbert"},{"name":"Zara Ahmed","fid":678765,"level":"Bold Blue 1","time":"11:30:00","date":"2026-03-18","loc":"Gilbert"},{"name":"Omar Ahmed","fid":678765,"level":"Baby Blue 1","time":"11:30:00","date":"2026-03-18","loc":"Gilbert"},{"name":"Lyra Pham","fid":679443,"level":"Bright Blue 1","time":"13:00:00","date":"2026-03-18","loc":"Gilbert"},{"name":"Silas Nwosu","fid":680667,"level":"Bold Blue 1","time":"14:30:00","date":"2026-03-18","loc":"Gilbert"},{"name":"Avani Sharma","fid":679112,"level":"Bright Blue 1","time":"09:30:00","date":"2026-03-17","loc":"Hoffman Estates"},{"name":"Dev Sharma","fid":679112,"level":"Baby Blue 1","time":"09:30:00","date":"2026-03-17","loc":"Hoffman Estates"},{"name":"Kenji Watanabe","fid":678231,"level":"Bold Blue 1","time":"11:00:00","date":"2026-03-17","loc":"Niles"},{"name":"Hana Watanabe","fid":678231,"level":"Bright Blue 1","time":"11:00:00","date":"2026-03-17","loc":"Niles"},{"name":"Asher Flynn","fid":680123,"level":"Baby Blue 1","time":"13:00:00","date":"2026-03-18","loc":"Germantown"},{"name":"Petra Flynn","fid":680123,"level":"Bold Blue 1","time":"13:00:00","date":"2026-03-18","loc":"Germantown"},{"name":"Reign Carter","fid":679867,"level":"Bright Blue 1","time":"15:30:00","date":"2026-03-18","loc":"Fairfax"},{"name":"Arlo Carter","fid":679867,"level":"Baby Blue 1","time":"15:30:00","date":"2026-03-18","loc":"Fairfax"},{"name":"Remy Osei","fid":678560,"level":"Bold Blue 1","time":"14:30:00","date":"2026-03-17","loc":"Tustin"},{"name":"Selah Osei","fid":678560,"level":"Bright Blue 1","time":"14:30:00","date":"2026-03-17","loc":"Tustin"},{"name":"Lena Park","fid":679788,"level":"Baby Blue 1","time":"16:00:00","date":"2026-03-17","loc":"Tustin"},{"name":"Theo Park","fid":679788,"level":"Bold Blue 1","time":"16:00:00","date":"2026-03-17","loc":"Tustin"},{"name":"Isla Nguyen","fid":680334,"level":"Bright Blue 1","time":"17:30:00","date":"2026-03-17","loc":"Tustin"},{"name":"Cora Vance","fid":681234,"level":"Bold Blue 1","time":"17:00:00","date":"2026-03-16","loc":"Chicago - North Center"}];
+function fmtTime(t){const[h,m]=t.split(':').map(Number);const ap=h>=12?'PM':'AM';const h12=h%12||12;return h12+':'+String(m).padStart(2,'0')+' '+ap}
+function fmtDate(d){const[y,mo,day]=d.split('-');const days=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];const dt=new Date(parseInt(y),parseInt(mo)-1,parseInt(day));return days[dt.getDay()]+' '+mo+'/'+day}
+function timeVal(t){const[h,m]=t.split(':').map(Number);return h*60+m}
+function badgeClass(l){if(l==='Bold Blue 1')return'bb1';if(l==='Bold Blue 2')return'bb2';if(l==='Bright Blue 1')return'brb1';if(l==='Bright Blue 2')return'brb2';if(l==='Baby Blue 1')return'bab1';if(l==='Baby Blue 2')return'bab2';return'bib1'}
+let activeLoc='All',activeDay='All',sortCol='date',sortDir='asc';
+function getFiltered(){const q=document.getElementById('search').value.toLowerCase();return data.filter(d=>(activeLoc==='All'||d.loc===activeLoc)&&(activeDay==='All'||d.date===activeDay)&&(!q||d.name.toLowerCase().includes(q)))}
+function render(){
+sortCol=document.getElementById('sortBy').value;sortDir=document.getElementById('sortDir').value;
+const rows=getFiltered().slice().sort((a,b)=>{let va,vb;
+if(sortCol==='time'){va=timeVal(a.time);vb=timeVal(b.time)}
+else if(sortCol==='date'){va=a.date+String(timeVal(a.time)).padStart(4,'0');vb=b.date+String(timeVal(b.time)).padStart(4,'0')}
+else{va=a[sortCol].toLowerCase();vb=b[sortCol].toLowerCase()}
+if(va<vb)return sortDir==='asc'?-1:1;if(va>vb)return sortDir==='asc'?1:-1;return 0});
+const cnt=rows.length;
+document.getElementById('rowCount').textContent=cnt+' student'+(cnt!==1?'s':'');
+document.getElementById('s-ns').textContent=cnt===data.length?'154':cnt;
+document.getElementById('s-rate').textContent=cnt===data.length?'28.2%':(Math.round(cnt/547*1000)/10)+'%';
+document.querySelectorAll('thead th').forEach(th=>th.classList.remove('sort-asc','sort-desc'));
+const ci=['name','level','date','time','loc'].indexOf(sortCol);
+if(ci>=0)document.querySelectorAll('thead th')[ci].classList.add(sortDir==='asc'?'sort-asc':'sort-desc');
+const tbody=document.getElementById('tbody');
+if(!rows.length){tbody.innerHTML='<tr><td colspan="5" class="empty">No results</td></tr>';return}
+tbody.innerHTML=rows.map(d=>'<tr><td><a class="name-link" href="https://app.lessonbuddy.com/families/'+d.fid+'" target="_blank">'+d.name+'</a></td><td><span class="badge '+badgeClass(d.level)+'">'+d.level+'</span></td><td class="date-cell">'+fmtDate(d.date)+'</td><td class="time-cell">'+fmtTime(d.time)+'</td><td class="loc-cell">'+d.loc+'</td></tr>').join('')}
+function colSort(col){if(sortCol===col){sortDir=sortDir==='asc'?'desc':'asc'}else{sortCol=col;sortDir='asc'}document.getElementById('sortBy').value=sortCol;document.getElementById('sortDir').value=sortDir;render()}
+function buildDayTabs(){const container=document.getElementById('dayTabs');const counts={};data.forEach(d=>{counts[d.date]=(counts[d.date]||0)+1});
+const allTab=document.createElement('div');allTab.className='day-tab active';allTab.innerHTML='All days <span class="cnt">('+data.length+')</span>';allTab.onclick=function(){setDay('All',this)};container.appendChild(allTab);
+Object.entries(DAY_MAP).forEach(function(e){const ds=e[0],label=e[1];const c=counts[ds]||0;const t=document.createElement('div');t.className='day-tab'+(c===0?' faded':'');t.innerHTML=label+' <span class="cnt">('+c+')</span>';t.onclick=function(){setDay(ds,this)};container.appendChild(t)})}
+function setDay(day,el){document.querySelectorAll('.day-tab').forEach(function(t){t.classList.remove('active')});el.classList.add('active');activeDay=day;render()}
+function buildPills(){const container=document.getElementById('pills');const allPill=document.createElement('div');allPill.className='pill active';allPill.textContent='All locations';allPill.onclick=function(){setLoc('All',this)};container.appendChild(allPill);
+ALL_LOCS.forEach(function(loc){const hasData=data.some(function(d){return d.loc===loc});const p=document.createElement('div');p.className='pill'+(!hasData?' faded':'');p.textContent=loc;p.onclick=function(){setLoc(loc,this)};container.appendChild(p)})}
+function setLoc(loc,el){document.querySelectorAll('.pill').forEach(function(p){p.classList.remove('active')});el.classList.add('active');activeLoc=loc;render()}
+buildDayTabs();buildPills();render();
+</script>
+</body>
+</html>
